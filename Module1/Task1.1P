@@ -1,0 +1,48 @@
+// Simple arduino sense-think-act system.
+
+int set = 0;
+int motionSensor = 0;
+
+void setup()
+{
+  Serial.begin(9600);
+  
+  // Motion sensor input.
+  pinMode(2, INPUT);
+  
+  // LED output.
+  pinMode(LED_BUILTIN, OUTPUT);
+}
+
+void loop()
+{
+  // Read the motion sensor.
+  motionSensor = digitalRead(2);
+
+  // If the motion sensor is triggered.
+  if (motionSensor == HIGH) 
+  {
+    
+    // Print motion sensor state to serial monitor.
+    Serial.println(motionSensor);
+    
+    // Turn on LED.
+    digitalWrite(LED_BUILTIN, HIGH);
+    
+    // Print LED state to serial monitor.
+    Serial.println("LED_ON");
+  }
+  else if (motionSensor == LOW) 
+  {
+    // Turn off LED.
+    digitalWrite(LED_BUILTIN, LOW);
+
+    // Print motion sensor state to serial monitor.
+    Serial.println(motionSensor);
+
+    // Print LED state to serial monitor.
+    Serial.println("LED_OFF");
+  }
+  
+  delay(10);
+}
