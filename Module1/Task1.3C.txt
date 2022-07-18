@@ -1,0 +1,83 @@
+// Arduino system using interrupt with two sensors.
+
+int motionSensor = 0;
+int moistureSensor = 0;
+
+void setup()
+{
+  Serial.begin(9600);
+  
+  // Motion sensor input.
+  pinMode(2, INPUT);
+  
+  // Temperature sensor input.
+  pinMode(3, INPUT);
+  
+  // LED output.
+  pinMode(LED_BUILTIN, OUTPUT);
+  
+  // Interrupt for motion sensor.
+  attachInterrupt(digitalPinToInterrupt(2), toggleLedFromMotion, CHANGE);
+  
+  // Interrupt for moisture sensor.
+  attachInterrupt(digitalPinToInterrupt(3), toggleLedFromMoisture, CHANGE);
+}
+
+void loop()
+{
+    delay(500); 
+}
+
+// Interrupt that checks the changing state of motion sensor and toggles LED.
+void toggleLedFromMotion()
+{
+  	if (motionSensor == LOW)
+    {
+      // Set motion sensor to high.
+      motionSensor = HIGH;
+      
+      Serial.println("LED_ON from motion.");
+
+      // Turn on LED.
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(100);
+    }
+  	else if (motionSensor == HIGH)
+    {
+      	// Set the motion sensor to low.
+      	motionSensor = LOW;
+      
+      	Serial.println("LED_OFF from motion.");
+      
+		// Turn off LED.
+      	digitalWrite(LED_BUILTIN, LOW);
+      	delay(100);
+    }
+}
+
+// Interrupt that checks the changing state of moisture sensor and toggles LED.
+void toggleLedFromMoisture()
+{
+  	if (moistureSensor == LOW)
+    {
+      // Set motisture sensor to high.
+      moistureSensor = HIGH;
+      
+      Serial.println("LED_ON from moisture.");
+
+      // Turn on LED.
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(100);
+    }
+  	else if (moistureSensor == HIGH)
+    {
+      	// Set the moisture sensor to low.
+      	moistureSensor = LOW;
+      
+      	Serial.println("LED_OFF from moisture.");
+      
+		// Turn off LED.
+      	digitalWrite(LED_BUILTIN, LOW);
+      	delay(100);
+    }
+}
