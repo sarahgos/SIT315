@@ -1,0 +1,50 @@
+// Simple arduino sense-think-act system using interrupt.
+
+int set = 0;
+int motionSensor = 0;
+
+void setup()
+{
+  Serial.begin(9600);
+  
+  // Motion sensor input.
+  pinMode(2, INPUT);
+  
+  // LED output.
+  pinMode(LED_BUILTIN, OUTPUT);
+  
+  // Interrupt
+  attachInterrupt(digitalPinToInterrupt(2), toggleLED, CHANGE);
+}
+
+void loop()
+{
+    delay(500); 
+}
+
+// Interrupt that checks the changing state of motion sensor and toggles LED.
+void toggleLED()
+{
+  	if (motionSensor == LOW)
+    {
+      // Set motion sensor to high.
+      motionSensor = HIGH;
+      
+      Serial.println("LED_ON");
+
+      // Turn on LED.
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(100);
+    }
+  	else if (motionSensor == HIGH)
+    {
+      	// Set the motion sensor to low.
+      	motionSensor = LOW;
+      
+      	Serial.println("LED_OFF");
+      
+		// Turn off LED.
+      	digitalWrite(LED_BUILTIN, LOW);
+      	delay(100);
+    }
+}
