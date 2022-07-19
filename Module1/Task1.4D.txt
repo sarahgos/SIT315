@@ -1,0 +1,139 @@
+// Arduino system using pin change interrupt with many sensors and timer interrupt.
+#include<avr/io.h>
+#include<avr/interrupt.h>
+
+int motionSensor = 0;
+int moistureSensor = 0;
+int tiltSensor = 0;
+int tiltFourSensor = 0;
+int led = 11;
+const int led_pin_timer = PB5;
+const uint16_t timer1_load_value = 0;
+unsigned int reload = 0xF424; 
+volatile int count;
+
+void setup()
+{
+  Serial.begin(9600);
+  
+  // Motion sensor input.
+  pinMode(2, INPUT);
+  
+  // Moisture sensor input.
+  pinMode(3, INPUT);
+  
+  // Tilt sensor input.
+  pinMode(7, INPUT);
+  
+  // Tilt 4 pin sensor input.
+  pinMode(8, INPUT);
+  
+  // LED output.
+  pinMode(led, OUTPUT);
+  
+  // Turn on port d for pin change interrupt.
+  PCICR |= B00000100;
+  
+  // Turn on port b for pin change interrupt.
+  PCICR |= B00000001;
+  
+  // Turn on pin 7 using pin change mask register.
+  PCMSK2 |= B10000000;
+  
+  // Turn on pin 8 using pin change mask register.
+  PCMSK0 |= B00000001;
+  
+  // Sets the led for output.
+  DDRB |= (1 << led_pin_timer);
+  
+  // Interrupt for motion sensor.
+  attachInterrupt(digitalPinToInterrupt(2), toggleLedFromMotion, CHANGE);
+  
+  // Interrupt for moisture sensor.
+  attachInterrupt(digitalPinToInterrupt(3), toggleLedFromMoisture, CHANGE);
+
+  // The below code is used for the interrupt timer.
+  // Resets the timer control.
+  TCCR1A = 0;
+
+  // Set prescaler to 256
+  TCCR1B |= (1 << CS12);
+  TCCR1B &= ~(1 << CS11);
+  TCCR1B &= ~(1 << CS10);
+
+  // Stores our match value.
+  OCR1A = reload; 
+
+  // Enable the timer interrupt.
+  TIMSK1 = (1 << OCIE1A);
+
+  // Global interrupts.
+  sei();
+}
+
+void loop()
+{
+  	delay(500);
+}
+
+// Function to toggle an LED light on and off from sensor.
+int toggleLED(int sensor, String sensorName)
+{
+    if (sensor == LOW)
+    {
+      // Set flex sensor to high.
+      sensor = HIGH;
+      
+      Serial.println("LED_ON from " + sensorName + " sensor.");
+
+      // Turn on LED.
+      digitalWrite(led, HIGH);
+    }
+  	else if (sensor == HIGH)
+    {
+      	// Set the flex sensor to low.
+      	sensor = LOW;
+      
+      	Serial.println("LED_OFF from " + sensorName + " sensor.");
+      
+		// Turn off LED.
+      	digitalWrite(led, LOW);
+    }
+  return sensor;
+}
+
+// Pin change interrupt with pin D7.
+ISR(PCINT2_vect)
+{
+    tiltSensor = toggleLED(tiltSensor, "tilt");
+}
+
+// Pin change interrupt with pin D6.
+ISR(PCINT0_vect)
+{
+    tiltFourSensor = toggleLED(tiltFourSensor, "tilt four pin");
+}
+
+// Interrupt that checks the changing state of motion sensor and toggles LED.
+void toggleLedFromMotion()
+{
+ 	motionSensor = toggleLED(motionSensor, "motion");
+}
+
+// Interrupt that checks the changing state of moisture sensor and toggles LED.
+void toggleLedFromMoisture()
+{
+  	moistureSensor = toggleLED(moistureSensor, "moisture");
+}
+
+// Routine for timer1.
+ISR(TIMER1_COMPA_vect)
+{
+  // Increment count.
+  count++;
+  
+  Serial.println("LED flash from timer.");
+  
+  // Toggles the LED.
+  PORTB ^= (1 << led_pin_timer);
+}
